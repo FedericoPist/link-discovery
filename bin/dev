@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")/.."
+php artisan serve --host=127.0.0.1 --port=8015 &
+web_pid=$!
+php artisan discovery:work --idle-seconds=0 &
+queue_pid=$!
+php artisan schedule:work &
+schedule_pid=$!
+trap 'kill "$web_pid" "$queue_pid" "$schedule_pid" 2>/dev/null || true' EXIT INT TERM
+echo 'Link Discovery: http://127.0.0.1:8015'
+wait
